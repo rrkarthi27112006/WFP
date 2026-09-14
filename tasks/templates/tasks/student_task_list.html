@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}My Tasks — EduTrack{% endblock %}
+{% block content %}
+<h1>My Tasks</h1>
+
+<div class="filter-bar" style="margin-bottom:0.5rem;">
+  <a href="?view=all" class="btn btn-sm {% if view_filter == 'all' %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+  <a href="?view=today" class="btn btn-sm {% if view_filter == 'today' %}btn-primary{% else %}btn-outline{% endif %}">Today</a>
+  <a href="?view=upcoming" class="btn btn-sm {% if view_filter == 'upcoming' %}btn-primary{% else %}btn-outline{% endif %}">Upcoming</a>
+  <a href="?view=completed" class="btn btn-sm {% if view_filter == 'completed' %}btn-primary{% else %}btn-outline{% endif %}">Completed</a>
+  <a href="?view=overdue" class="btn btn-sm {% if view_filter == 'overdue' %}btn-primary{% else %}btn-outline{% endif %}">Overdue</a>
+</div>
+
+<form method="get" class="filter-bar">
+  <input type="hidden" name="view" value="{{ view_filter }}">
+  <input type="text" name="q" placeholder="Search tasks..." value="{{ search }}">
+  <select name="subject">
+    <option value="">All Subjects</option>
+    {% for s in subjects %}<option value="{{ s.id }}" {% if subject_filter == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <select name="type">
+    <option value="">All Types</option>
+    {% for key, label in task_types %}<option value="{{ key }}" {% if type_filter == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <select name="priority">
+    <option value="">Any Priority</option>
+    <option value="high" {% if priority_filter == "high" %}selected{% endif %}>High</option>
+    <option value="medium" {% if priority_filter == "medium" %}selected{% endif %}>Medium</option>
+    <option value="low" {% if priority_filter == "low" %}selected{% endif %}>Low</option>
+  </select>
+  <select name="status">
+    <option value="">Any Status</option>
+    <option value="pending" {% if status_filter == "pending" %}selected{% endif %}>Pending</option>
+    <option value="submitted" {% if status_filter == "submitted" %}selected{% endif %}>Submitted</option>
+    <option value="reviewed" {% if status_filter == "reviewed" %}selected{% endif %}>Reviewed</option>
+    <option value="overdue" {% if status_filter == "overdue" %}selected{% endif %}>Overdue</option>
+  </select>
+  <button type="submit" class="btn btn-sm btn-outline">Apply Filters</button>
+</form>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Title</th><th>Subject</th><th>Type</th><th>Due</th><th>Priority</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for t, status in tasks %}
+    <tr>
+      <td><a href="{% url 'tasks:student_task_detail' t.pk %}">{{ t.title }}</a></td>
+      <td>{{ t.subject.name }}</td>
+      <td>{{ t.get_task_type_display }}</td>
+      <td>{{ t.due_date|date:"d M, H:i" }}</td>
+      <td><span class="badge badge-{{ t.smart_priority_label|lower }}">{{ t.smart_priority_label }}</span></td>
+      <td><span class="badge badge-{{ status }}">{{ status|title }}</span></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6"><div class="empty-state">No tasks match these filters.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

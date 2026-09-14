@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Tasks — EduTrack{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1>Tasks</h1>
+  <a href="{% url 'tasks:task_create' %}" class="btn btn-accent">+ New Task</a>
+</div>
+
+<form method="get" class="filter-bar">
+  <select name="class">
+    <option value="">All Classes</option>
+    {% for c in classes %}<option value="{{ c.id }}" {% if class_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+  </select>
+  <select name="subject">
+    <option value="">All Subjects</option>
+    {% for s in subjects %}<option value="{{ s.id }}" {% if subject_filter == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+  </select>
+  <select name="type">
+    <option value="">All Types</option>
+    {% for key, label in task_types %}<option value="{{ key }}" {% if type_filter == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button type="submit" class="btn btn-outline btn-sm">Filter</button>
+</form>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Title</th><th>Subject</th><th>Assigned To</th><th>Type</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for t in tasks %}
+    <tr>
+      <td><a href="{% url 'tasks:teacher_task_detail' t.pk %}">{{ t.title }}</a></td>
+      <td>{{ t.subject.name }}</td>
+      <td>{% if t.student %}{{ t.student }}{% else %}{{ t.class_assigned|default:"—" }}{% endif %}</td>
+      <td>{{ t.get_task_type_display }}</td>
+      <td>{{ t.due_date|date:"d M, H:i" }}</td>
+      <td>{% if t.is_overdue %}<span class="badge badge-overdue">Overdue</span>{% else %}<span class="badge badge-pending">Open</span>{% endif %}</td>
+      <td>
+        <a href="{% url 'tasks:task_edit' t.pk %}" class="btn btn-sm btn-outline">Edit</a>
+        <a href="{% url 'tasks:task_delete' t.pk %}" class="btn btn-sm btn-danger">Delete</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7"><div class="empty-state">No tasks yet. Create your first task.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

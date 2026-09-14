@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Reports — EduTrack{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+
+<div class="section-title"><h2>Class Completion Rate</h2></div>
+<div class="card">
+  {% for c in class_completion %}
+    <div class="progress-row">
+      <div class="progress-label"><span>{{ c.class.name }}</span><span>{{ c.percent }}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:{{ c.percent }}%;"></div></div>
+    </div>
+  {% empty %}<p class="muted">No classes assigned to you yet.</p>{% endfor %}
+</div>
+
+<div class="grid grid-cols-2" style="align-items:start; margin-top:1.5rem;">
+  <div class="card card--brick">
+    <h3>Students With Missing Assignments</h3>
+    {% for m in missing_students %}
+      <div class="task-row"><span>{{ m.student.user.get_full_name|default:m.student.user.username }}</span><span class="badge badge-overdue">{{ m.missing_count }}</span></div>
+    {% empty %}<p class="muted">No missing assignments right now.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h3>Most Overdue Tasks</h3>
+    {% for t in most_overdue %}
+      <div class="task-row"><span>{{ t.title }}</span><span class="task-meta">{{ t.due_date|date:"d M" }}</span></div>
+    {% empty %}<p class="muted">Nothing overdue.</p>{% endfor %}
+  </div>
+</div>
+
+<div class="section-title"><h2>Submission Statistics</h2></div>
+<div class="grid grid-cols-4">
+  <div class="stat-card accent-ink"><span class="value">{{ submission_stats.total }}</span><span class="label">Total Submissions</span></div>
+  <div class="stat-card accent-sage"><span class="value">{{ submission_stats.reviewed }}</span><span class="label">Reviewed</span></div>
+  <div class="stat-card accent-marigold"><span class="value">{{ submission_stats.pending_review }}</span><span class="label">Pending Review</span></div>
+  <div class="stat-card accent-brick"><span class="value">{{ submission_stats.not_submitted }}</span><span class="label">Not Submitted</span></div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — EduTrack{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<div class="form-card">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-accent">Save Class</button>
+    <a href="{% url 'academics:class_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

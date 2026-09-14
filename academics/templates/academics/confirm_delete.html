@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Confirm Delete — EduTrack{% endblock %}
+{% block content %}
+<h1>Delete {{ type }}?</h1>
+<div class="card card--brick">
+  <p>Are you sure you want to delete <strong>{{ object }}</strong>? This cannot be undone.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+    {% if type == "subject" %}
+      <a href="{% url 'academics:subject_list' %}" class="btn btn-outline">Cancel</a>
+    {% else %}
+      <a href="{% url 'academics:class_list' %}" class="btn btn-outline">Cancel</a>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

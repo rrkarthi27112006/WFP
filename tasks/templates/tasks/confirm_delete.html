@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Delete Task — EduTrack{% endblock %}
+{% block content %}
+<h1>Delete task?</h1>
+<div class="card card--brick">
+  <p>Are you sure you want to delete <strong>{{ object.title }}</strong>? All related submissions will also be removed.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+    <a href="{% url 'tasks:teacher_task_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

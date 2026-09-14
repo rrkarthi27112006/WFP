@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Students — EduTrack{% endblock %}
+{% block content %}
+<h1>Students</h1>
+<form method="get" class="filter-bar">
+  <select name="class">
+    <option value="">All Classes</option>
+    {% for c in classes %}
+      <option value="{{ c.id }}" {% if class_filter == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-outline btn-sm">Filter</button>
+</form>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Name</th><th>Username</th><th>Class</th><th>Roll No.</th><th>Parent</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for s in students %}
+    <tr>
+      <td>{{ s.user.get_full_name|default:s.user.username }}</td>
+      <td>{{ s.user.username }}</td>
+      <td>{{ s.student_class|default:"—" }}</td>
+      <td>{{ s.roll_number|default:"—" }}</td>
+      <td>{{ s.parent|default:"—" }}</td>
+      <td><a href="{% url 'academics:student_edit' s.pk %}" class="btn btn-sm btn-outline">Edit</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6"><div class="empty-state">No students found.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

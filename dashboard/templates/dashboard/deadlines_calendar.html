@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Deadlines — EduTrack{% endblock %}
+{% block content %}
+<h1>Academic Deadlines</h1>
+{% regroup tasks by due_date|date:"d M Y" as day_list %}
+{% for day in day_list %}
+  <div class="section-title"><h2>{{ day.grouper }}</h2></div>
+  <div class="card">
+    {% for t in day.list %}
+      <div class="task-row">
+        <span>{{ t.title }} <span class="muted">({{ t.subject.name }} &middot; {{ t.get_task_type_display }})</span></span>
+        <span class="task-meta">{{ t.due_date|date:"H:i" }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% empty %}
+  <div class="empty-state">No deadlines scheduled.</div>
+{% endfor %}
+{% endblock %}

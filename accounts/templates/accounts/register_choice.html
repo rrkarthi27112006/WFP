@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Create an account — EduTrack{% endblock %}
+{% block guest_content %}
+<div class="auth-shell">
+  <div style="max-width:600px; width:100%;">
+    <h1 class="text-center">Create your EduTrack account</h1>
+    <p class="muted text-center">Parent accounts are set up by a teacher or administrator — ask your school to link you to your child.</p>
+    <div class="role-choice-grid" style="margin: 2rem auto;">
+      <div class="role-choice-card">
+        <h3>I'm a Student</h3>
+        <p class="muted">Track tasks, submit work, and see your progress.</p>
+        <a href="{% url 'accounts:register_student' %}" class="btn btn-primary">Register as Student</a>
+      </div>
+      <div class="role-choice-card">
+        <h3>I'm a Teacher</h3>
+        <p class="muted">Assign work, review submissions, and monitor your classes.</p>
+        <a href="{% url 'accounts:register_teacher' %}" class="btn btn-accent">Register as Teacher</a>
+      </div>
+    </div>
+    <p class="auth-links">Already have an account? <a href="{% url 'accounts:login' %}">Login</a></p>
+  </div>
+</div>
+{% endblock %}

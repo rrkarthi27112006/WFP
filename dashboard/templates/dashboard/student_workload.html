@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Workload — EduTrack{% endblock %}
+{% block content %}
+<h1>Workload Analysis</h1>
+
+{% if conflicts.conflict %}
+<div class="alert alert-danger">
+  <strong>Heavy workload detected.</strong> Approximately {{ conflicts.total_hours }} hours of work is due within the next {{ conflicts.window_hours }} hours.
+</div>
+{% endif %}
+{% if missed.warn %}
+<div class="alert alert-warning">You have missed {{ missed.count }} assignment{{ missed.count|pluralize }} recently.</div>
+{% endif %}
+
+<div class="grid grid-cols-4">
+  <div class="stat-card accent-ink"><span class="value">{{ workload.due_today|length }}</span><span class="label">Due Today</span></div>
+  <div class="stat-card accent-marigold"><span class="value">{{ workload.due_this_week|length }}</span><span class="label">Due This Week</span></div>
+  <div class="stat-card accent-sage"><span class="value">{{ workload.estimated_hours }}h</span><span class="label">Estimated Workload</span></div>
+  <div class="stat-card accent-brick"><span class="value">{{ workload.overdue|length }}</span><span class="label">Overdue</span></div>
+</div>
+
+<div class="card" style="margin-top:1.5rem;">
+  <h3>Completion — {{ workload.completion_pct }}%</h3>
+  <div class="progress-track"><div class="progress-fill" style="width:{{ workload.completion_pct }}%;"></div></div>
+  <p class="muted" style="margin-top:0.5rem;">{{ workload.completed|length }} completed &middot; {{ workload.pending|length }} pending &middot; {{ workload.overdue|length }} overdue</p>
+</div>
+
+<div class="section-title"><h2>Due This Week</h2></div>
+<div class="card">
+  {% for t in workload.due_this_week %}
+    <div class="task-row"><span>{{ t.title }}</span><span class="task-meta">{{ t.due_date|date:"D, d M H:i" }} &middot; {{ t.estimated_hours }}h</span></div>
+  {% empty %}<p class="muted">Nothing due this week.</p>{% endfor %}
+</div>
+{% endblock %}

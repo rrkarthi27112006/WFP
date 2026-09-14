@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}EduTrack{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <a href="{% url 'dashboard:redirect' %}" class="brand">Edu<span>Track</span></a>
+    {% if user.teacher_profile %}
+      <div class="role-tag">Teacher</div>
+      <nav>
+        <a href="{% url 'dashboard:teacher_dashboard' %}" class="{% if request.resolver_match.url_name == 'teacher_dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{% url 'academics:class_list' %}" class="{% if request.resolver_match.url_name == 'class_list' %}active{% endif %}">Classes</a>
+        <a href="{% url 'academics:student_list' %}" class="{% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">Students</a>
+        <a href="{% url 'academics:subject_list' %}" class="{% if request.resolver_match.url_name == 'subject_list' %}active{% endif %}">Subjects</a>
+        <a href="{% url 'tasks:teacher_task_list' %}" class="{% if 'teacher_task' in request.resolver_match.url_name %}active{% endif %}">Tasks</a>
+        <a href="{% url 'dashboard:deadlines_calendar' %}" class="{% if request.resolver_match.url_name == 'deadlines_calendar' %}active{% endif %}">Deadlines</a>
+        <a href="{% url 'notifications:announcement_list' %}" class="{% if 'announcement' in request.resolver_match.url_name %}active{% endif %}">Announcements</a>
+        <a href="{% url 'dashboard:teacher_reports' %}" class="{% if request.resolver_match.url_name == 'teacher_reports' %}active{% endif %}">Reports</a>
+        <a href="{% url 'admin:index' %}">Profile / Admin</a>
+        <a href="{% url 'accounts:logout' %}">Logout</a>
+      </nav>
+    {% elif user.student_profile %}
+      <div class="role-tag">Student</div>
+      <nav>
+        <a href="{% url 'dashboard:student_dashboard' %}" class="{% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{% url 'tasks:student_task_list' %}" class="{% if 'student_task' in request.resolver_match.url_name %}active{% endif %}">My Tasks</a>
+        <a href="{% url 'dashboard:student_workload' %}" class="{% if request.resolver_match.url_name == 'student_workload' %}active{% endif %}">Workload</a>
+        <a href="{% url 'dashboard:deadlines_calendar' %}" class="{% if request.resolver_match.url_name == 'deadlines_calendar' %}active{% endif %}">Deadlines</a>
+        <a href="{% url 'dashboard:student_progress' %}" class="{% if request.resolver_match.url_name == 'student_progress' %}active{% endif %}">Progress</a>
+        <a href="{% url 'notifications:my_announcements' %}" class="{% if request.resolver_match.url_name == 'my_announcements' %}active{% endif %}">Announcements</a>
+        <a href="{% url 'accounts:logout' %}">Logout</a>
+      </nav>
+    {% elif user.parent_profile %}
+      <div class="role-tag">Parent</div>
+      <nav>
+        <a href="{% url 'dashboard:parent_dashboard' %}" class="{% if request.resolver_match.url_name == 'parent_dashboard' %}active{% endif %}">Dashboard</a>
+        <a href="{% url 'dashboard:deadlines_calendar' %}" class="{% if request.resolver_match.url_name == 'deadlines_calendar' %}active{% endif %}">Deadlines</a>
+        <a href="{% url 'notifications:my_announcements' %}" class="{% if request.resolver_match.url_name == 'my_announcements' %}active{% endif %}">Announcements</a>
+        <a href="{% url 'accounts:logout' %}">Logout</a>
+      </nav>
+    {% endif %}
+  </aside>
+
+  <div class="main-col">
+    <header class="topbar">
+      <div class="greeting">{% block topbar_title %}Welcome, {{ user.first_name|default:user.username }}{% endblock %}</div>
+      <div class="topbar-actions">
+        <details>
+          <summary class="bell-link" style="list-style:none; cursor:pointer;">
+            Notifications
+            {% if nav_unread_count %}<span class="bell-count">{{ nav_unread_count }}</span>{% endif %}
+          </summary>
+          <ul class="notif-dropdown-list">
+            {% for n in nav_recent_notifications %}
+              <li>{{ n.message }}<br><span class="muted">{{ n.created_at|timesince }} ago</span></li>
+            {% empty %}
+              <li class="muted">No notifications yet.</li>
+            {% endfor %}
+          </ul>
+          <a href="{% url 'notifications:notification_list' %}" class="btn btn-sm btn-outline">View all</a>
+        </details>
+      </div>
+    </header>
+    <main class="content">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% else %}
+  {% block guest_content %}{% endblock %}
+{% endif %}
+</body>
+</html>

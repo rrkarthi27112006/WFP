@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ task.title }} — EduTrack{% endblock %}
+{% block content %}
+<h1>{{ task.title }}</h1>
+<div class="card">
+  <p>{{ task.description|linebreaksbr }}</p>
+  <p class="muted">
+    {{ task.subject.name }} &middot; {{ task.get_task_type_display }} &middot; {{ task.get_difficulty_display }} difficulty
+    &middot; {{ task.estimated_hours }}h estimated &middot; {{ task.max_marks }} marks &middot; Due {{ task.due_date|date:"d M Y, H:i" }}
+  </p>
+  {% if task.attachment %}<p><a href="{{ task.attachment.url }}" class="btn btn-sm btn-outline">Download Attachment</a></p>{% endif %}
+  <a href="{% url 'tasks:task_edit' task.pk %}" class="btn btn-sm btn-outline">Edit Task</a>
+</div>
+
+<div class="section-title"><h2>Submissions</h2></div>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Student</th><th>Status</th><th>Submitted</th><th>Marks</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for s in submissions %}
+    <tr>
+      <td>{{ s.student.user.get_full_name|default:s.student.user.username }}</td>
+      <td><span class="badge badge-{{ s.effective_status }}">{{ s.get_status_display }}</span></td>
+      <td>{{ s.submitted_at|date:"d M, H:i"|default:"—" }}</td>
+      <td>{% if s.marks_obtained is not None %}{{ s.marks_obtained }}/{{ task.max_marks }}{% else %}—{% endif %}</td>
+      <td>
+        {% if s.file %}<a href="{{ s.file.url }}" class="btn btn-sm btn-outline">File</a>{% endif %}
+        {% if s.image %}<a href="{{ s.image.url }}" class="btn btn-sm btn-outline">Image</a>{% endif %}
+        {% if s.status == 'submitted' or s.status == 'reviewed' %}
+          <a href="{% url 'submissions:review_submission' s.pk %}" class="btn btn-sm btn-accent">Review</a>
+        {% endif %}
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5"><div class="empty-state">No submissions yet.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<div class="section-title"><h2>Not Yet Submitted</h2></div>
+{% if not_submitted %}
+<ul>
+  {% for st in not_submitted %}<li>{{ st.user.get_full_name|default:st.user.username }}</li>{% endfor %}
+</ul>
+{% else %}
+<div class="empty-state">Everyone has submitted this task.</div>
+{% endif %}
+{% endblock %}

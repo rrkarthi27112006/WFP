@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Announcements — EduTrack{% endblock %}
+{% block content %}
+<h1>Announcements</h1>
+{% for a in announcements %}
+  <div class="card card--accent">
+    <h3>{{ a.title }}</h3>
+    <p>{{ a.message|linebreaksbr }}</p>
+    <p class="muted">{{ a.teacher }} &middot; {{ a.created_at|date:"d M Y" }}</p>
+  </div>
+{% empty %}
+  <div class="empty-state">No announcements yet.</div>
+{% endfor %}
+{% endblock %}

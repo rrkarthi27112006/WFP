@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Submit: {{ task.title }} — EduTrack{% endblock %}
+{% block content %}
+<h1>Submit: {{ task.title }}</h1>
+<p class="muted">Due {{ task.due_date|date:"d M Y, H:i" }} &middot; {{ task.max_marks }} marks</p>
+<div class="form-card">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-accent">Submit Work</button>
+    <a href="{% url 'tasks:student_task_detail' task.pk %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

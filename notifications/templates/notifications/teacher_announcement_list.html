@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Announcements — EduTrack{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1>Announcements</h1>
+  <a href="{% url 'notifications:announcement_create' %}" class="btn btn-accent">+ New Announcement</a>
+</div>
+{% for a in announcements %}
+  <div class="card card--accent">
+    <h3>{{ a.title }}</h3>
+    <p>{{ a.message|linebreaksbr }}</p>
+    <p class="muted">
+      {% if a.target_all_students %}All Students{% else %}{{ a.target_class|default:"—" }}{% endif %}
+      &middot; {{ a.created_at|date:"d M Y, H:i" }}
+    </p>
+  </div>
+{% empty %}
+  <div class="empty-state">You haven't posted any announcements yet.</div>
+{% endfor %}
+{% endblock %}

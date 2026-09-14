@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — EduTrack{% endblock %}
+{% block topbar_title %}Good Morning, {{ user.first_name|default:user.username }}!{% endblock %}
+{% block content %}
+
+{% if conflicts.conflict %}
+<div class="alert alert-danger">
+  <strong>Heavy workload detected.</strong><br>
+  You have approximately {{ conflicts.total_hours }} hours of work due within the next {{ conflicts.window_hours }} hours
+  ({{ conflicts.tasks|length }} tasks: {% for t in conflicts.tasks %}{{ t.title }}{% if not forloop.last %}, {% endif %}{% endfor %}).
+</div>
+{% endif %}
+
+{% if missed.warn %}
+<div class="alert alert-warning">
+  You have missed {{ missed.count }} assignment{{ missed.count|pluralize }} recently. Catching up now will help keep your progress on track.
+</div>
+{% endif %}
+
+<div class="grid grid-cols-4">
+  <div class="stat-card accent-ink"><span class="value">{{ pending|length }}</span><span class="label">Pending Tasks</span></div>
+  <div class="stat-card accent-sage"><span class="value">{{ completed|length }}</span><span class="label">Completed Tasks</span></div>
+  <div class="stat-card accent-brick"><span class="value">{{ overdue|length }}</span><span class="label">Overdue Tasks</span></div>
+  <div class="stat-card accent-marigold"><span class="value">{{ completion_rate }}%</span><span class="label">Completion Rate</span></div>
+</div>
+
+<div class="section-title"><h2>What Should I Work On First?</h2></div>
+{% for t, reason in priority_tasks %}
+  <div class="card priority-card priority-{{ t.smart_priority_label|lower }}">
+    <div class="flex-between">
+      <strong><a href="{% url 'tasks:student_task_detail' t.pk %}">{{ t.title }}</a></strong>
+      <span class="badge badge-{{ t.smart_priority_label|lower }}">{{ t.smart_priority_label }}</span>
+    </div>
+    <p class="reason">{{ reason }}</p>
+  </div>
+{% empty %}
+  <div class="empty-state">Nothing urgent right now — nice work staying ahead!</div>
+{% endfor %}
+
+<div class="grid grid-cols-2" style="align-items:start; margin-top:1.5rem;">
+  <div class="card">
+    <h3>Today's Tasks</h3>
+    {% for t in today %}
+      <div class="task-row"><span>{{ t.title }}</span><span class="task-meta">{{ t.due_date|date:"H:i" }}</span></div>
+    {% empty %}<p class="muted">Nothing due today.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h3>Upcoming Deadlines</h3>
+    {% for t in upcoming %}
+      <div class="task-row"><span>{{ t.title }}</span><span class="task-meta">{{ t.due_date|date:"d M" }}</span></div>
+    {% empty %}<p class="muted">Nothing coming up.</p>{% endfor %}
+  </div>
+  <div class="card card--sage">
+    <h3>Recent Feedback</h3>
+    {% for f in feedback %}
+      <div class="task-row"><span>{{ f.task.title }}: {{ f.feedback|truncatewords:12 }}</span></div>
+    {% empty %}<p class="muted">No feedback yet.</p>{% endfor %}
+  </div>
+  <div class="card card--accent">
+    <h3>Announcements</h3>
+    {% for a in announcements %}
+      <div class="task-row"><span>{{ a.title }}</span><span class="task-meta">{{ a.created_at|date:"d M" }}</span></div>
+    {% empty %}<p class="muted">No announcements yet.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

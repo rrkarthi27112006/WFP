@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Classes — EduTrack{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1>Classes</h1>
+  <a href="{% url 'academics:class_create' %}" class="btn btn-accent">+ New Class</a>
+</div>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Name</th><th>School</th><th>Class Teacher</th><th>Students</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for c in classes %}
+    <tr>
+      <td>{{ c.name }}</td>
+      <td>{{ c.school|default:"—" }}</td>
+      <td>{{ c.class_teacher|default:"—" }}</td>
+      <td>{{ c.student_count }}</td>
+      <td>
+        <a href="{% url 'academics:class_edit' c.pk %}" class="btn btn-sm btn-outline">Edit</a>
+        <a href="{% url 'academics:class_delete' c.pk %}" class="btn btn-sm btn-danger">Delete</a>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5"><div class="empty-state">No classes yet. Create one to get started.</div></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard — EduTrack{% endblock %}
+{% block topbar_title %}Good day, {{ user.first_name|default:user.username }}!{% endblock %}
+{% block content %}
+<div class="grid grid-cols-4">
+  <div class="stat-card accent-ink"><span class="value">{{ total_classes }}</span><span class="label">Total Classes</span></div>
+  <div class="stat-card accent-sage"><span class="value">{{ total_students }}</span><span class="label">Total Students</span></div>
+  <div class="stat-card accent-marigold"><span class="value">{{ active_tasks }}</span><span class="label">Active Tasks</span></div>
+  <div class="stat-card accent-brick"><span class="value">{{ pending_reviews }}</span><span class="label">Pending Reviews</span></div>
+</div>
+<div class="grid grid-cols-2" style="margin-top:0.5rem;">
+  <div class="stat-card accent-brick"><span class="value">{{ overdue_submissions }}</span><span class="label">Overdue Submissions</span></div>
+</div>
+
+<div class="grid grid-cols-2" style="align-items:start; margin-top:1.5rem;">
+  <div class="card">
+    <h3>Recent Tasks</h3>
+    {% for t in recent_tasks %}
+      <div class="task-row">
+        <span><a href="{% url 'tasks:teacher_task_detail' t.pk %}">{{ t.title }}</a></span>
+        <span class="task-meta">{{ t.due_date|date:"d M" }}</span>
+      </div>
+    {% empty %}<p class="muted">No tasks yet.</p>{% endfor %}
+  </div>
+
+  <div class="card">
+    <h3>Recent Submissions</h3>
+    {% for s in recent_submissions %}
+      <div class="task-row">
+        <span>{{ s.student.user.get_full_name|default:s.student.user.username }} — {{ s.task.title }}</span>
+        <span class="badge badge-{{ s.status }}">{{ s.get_status_display }}</span>
+      </div>
+    {% empty %}<p class="muted">No submissions yet.</p>{% endfor %}
+  </div>
+
+  <div class="card card--accent">
+    <h3>Upcoming Deadlines</h3>
+    {% for t in upcoming_deadlines %}
+      <div class="task-row">
+        <span>{{ t.title }}</span>
+        <span class="task-meta">{{ t.due_date|date:"d M, H:i" }}</span>
+      </div>
+    {% empty %}<p class="muted">Nothing due soon.</p>{% endfor %}
+  </div>
+
+  <div class="card card--brick">
+    <h3>Students With Missing Work</h3>
+    {% for m in missing_work %}
+      <div class="task-row">
+        <span>{{ m.student.user.get_full_name|default:m.student.user.username }}</span>
+        <span class="badge badge-overdue">{{ m.missing_count }} missing</span>
+      </div>
+    {% empty %}<p class="muted">Everyone is on track.</p>{% endfor %}
+  </div>
+</div>
+
+<div class="section-title"><h2>Announcements</h2><a href="{% url 'notifications:announcement_list' %}" class="muted">Manage &rarr;</a></div>
+{% for a in announcements %}
+  <div class="card card--accent"><h3>{{ a.title }}</h3><p>{{ a.message|truncatewords:25 }}</p></div>
+{% empty %}<div class="empty-state">No announcements posted yet.</div>{% endfor %}
+{% endblock %}

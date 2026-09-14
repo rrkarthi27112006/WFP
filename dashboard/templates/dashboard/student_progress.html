@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}My Progress — EduTrack{% endblock %}
+{% block content %}
+<h1>My Progress</h1>
+<div class="grid grid-cols-4">
+  <div class="stat-card accent-ink"><span class="value">{{ all_tasks|length }}</span><span class="label">Total Tasks</span></div>
+  <div class="stat-card accent-sage"><span class="value">{{ completed|length }}</span><span class="label">Completed Tasks</span></div>
+  <div class="stat-card accent-marigold"><span class="value">{{ pending|length }}</span><span class="label">Pending Tasks</span></div>
+  <div class="stat-card accent-brick"><span class="value">{{ overdue|length }}</span><span class="label">Overdue Tasks</span></div>
+</div>
+
+<div class="card" style="margin-top:1.5rem;">
+  <h3>Overall Completion — {{ completion_rate }}%</h3>
+  <div class="progress-track"><div class="progress-fill" style="width:{{ completion_rate }}%;"></div></div>
+</div>
+
+<div class="section-title"><h2>Subject-wise Progress</h2></div>
+<div class="card">
+  {% for p in progress %}
+    <div class="progress-row">
+      <div class="progress-label"><span>{{ p.subject }} ({{ p.completed }}/{{ p.total }})</span><span>{{ p.percent }}%</span></div>
+      <div class="progress-track"><div class="progress-fill {% if p.percent < 50 %}brick{% elif p.percent < 80 %}marigold{% endif %}" style="width:{{ p.percent }}%;"></div></div>
+    </div>
+  {% empty %}<p class="muted">No tasks recorded yet.</p>{% endfor %}
+</div>
+{% endblock %}

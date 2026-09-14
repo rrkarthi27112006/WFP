@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Review Submission — EduTrack{% endblock %}
+{% block content %}
+<h1>Review: {{ submission.task.title }}</h1>
+<div class="card">
+  <p><strong>Student:</strong> {{ submission.student.user.get_full_name|default:submission.student.user.username }}</p>
+  {% if submission.text_answer %}<p><strong>Answer:</strong><br>{{ submission.text_answer|linebreaksbr }}</p>{% endif %}
+  {% if submission.file %}<p><a href="{{ submission.file.url }}" class="btn btn-sm btn-outline">Download File</a></p>{% endif %}
+  {% if submission.image %}<p><a href="{{ submission.image.url }}" class="btn btn-sm btn-outline">View Image</a></p>{% endif %}
+  <p class="muted">Submitted {{ submission.submitted_at|date:"d M Y, H:i" }}</p>
+</div>
+<div class="form-card">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p class="helptext">Maximum marks for this task: {{ submission.task.max_marks }}</p>
+    <button type="submit" class="btn btn-accent">Save Review</button>
+    <a href="{% url 'tasks:teacher_task_detail' submission.task.pk %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

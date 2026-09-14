@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}New Announcement — EduTrack{% endblock %}
+{% block content %}
+<h1>New Announcement</h1>
+<div class="form-card">
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-accent">Post Announcement</button>
+    <a href="{% url 'notifications:announcement_list' %}" class="btn btn-outline">Cancel</a>
+  </form>
+</div>
+{% endblock %}

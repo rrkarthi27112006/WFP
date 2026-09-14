@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ task.title }} — EduTrack{% endblock %}
+{% block content %}
+<h1>{{ task.title }}</h1>
+<div class="card priority-card priority-{{ task.smart_priority_label|lower }}">
+  <span class="badge badge-{{ task.smart_priority_label|lower }}">{{ task.smart_priority_label }} PRIORITY</span>
+  <p class="reason">{{ task.smart_priority_reason }}</p>
+</div>
+
+<div class="card">
+  <p>{{ task.description|linebreaksbr }}</p>
+  <p class="muted">
+    {{ task.subject.name }} &middot; {{ task.get_task_type_display }} &middot; {{ task.get_difficulty_display }} difficulty
+    &middot; {{ task.estimated_hours }}h estimated &middot; {{ task.max_marks }} marks &middot; Due {{ task.due_date|date:"d M Y, H:i" }}
+  </p>
+  {% if task.attachment %}<p><a href="{{ task.attachment.url }}" class="btn btn-sm btn-outline">Download Teacher's Attachment</a></p>{% endif %}
+</div>
+
+<div class="section-title"><h2>Your Submission</h2></div>
+<div class="card">
+  <p>Status: <span class="badge badge-{{ submission.effective_status }}">{{ submission.get_status_display }}</span></p>
+  {% if submission.text_answer %}<p><strong>Your answer:</strong><br>{{ submission.text_answer|linebreaksbr }}</p>{% endif %}
+  {% if submission.file %}<p><a href="{{ submission.file.url }}" class="btn btn-sm btn-outline">View Uploaded File</a></p>{% endif %}
+  {% if submission.image %}<p><a href="{{ submission.image.url }}" class="btn btn-sm btn-outline">View Uploaded Image</a></p>{% endif %}
+
+  {% if submission.status == 'reviewed' %}
+    <div class="alert alert-success">
+      <strong>Marks:</strong> {{ submission.marks_obtained }}/{{ task.max_marks }}<br>
+      {% if submission.feedback %}<strong>Feedback:</strong> {{ submission.feedback }}{% endif %}
+    </div>
+  {% endif %}
+
+  {% if submission.status == 'pending' or submission.status == 'in_progress' or submission.is_resubmission_allowed %}
+    <a href="{% url 'submissions:submit_task' submission.pk %}" class="btn btn-accent">
+      {% if submission.status == 'pending' %}Submit Work{% else %}Resubmit Work{% endif %}
+    </a>
+  {% else %}
+    <p class="muted">Submitted on {{ submission.submitted_at|date:"d M Y, H:i" }}. Resubmission is not currently allowed.</p>
+  {% endif %}
+</div>
+{% endblock %}
