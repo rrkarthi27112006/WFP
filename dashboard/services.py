@@ -5,12 +5,16 @@ workload analysis, missed-task warnings, and academic progress.
 from django.utils import timezone
 from datetime import timedelta
 
+from django.db.models import Q
 from tasks.models import Task
 from submissions.models import Submission
 
 
 def get_tasks_for_student(student):
-    return [t for t in Task.objects.select_related('subject', 'teacher__user') if student in t.target_students()]
+    return list(Task.objects.filter(
+        Q(student=student) | Q(class_assigned__students=student)
+    ).distinct().select_related('subject', 'teacher__user'))
+
 
 
 def get_submission_map(student):

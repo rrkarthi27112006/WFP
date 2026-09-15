@@ -15,21 +15,8 @@ class TeacherProfile(models.Model):
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     school = models.ForeignKey('academics.School', on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
-    student_class = models.ForeignKey(
-        'academics.ClassRoom', on_delete=models.SET_NULL, null=True, blank=True, related_name='students'
-    )
     roll_number = models.CharField(max_length=20, blank=True)
-    parent = models.ForeignKey(
-        'accounts.ParentProfile', on_delete=models.SET_NULL, null=True, blank=True, related_name='children'
-    )
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username
 
-
-class ParentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='parent_profile')
-    phone = models.CharField(max_length=20, blank=True)
-
-    def __str__(self):
-        return self.user.get_full_name() or self.user.username

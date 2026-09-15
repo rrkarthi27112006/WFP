@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from accounts.decorators import teacher_required, student_required, parent_required
+from accounts.decorators import teacher_required, student_required
 from .models import Notification, Announcement
 from .forms import AnnouncementForm
 from .utils import notify_announcement
@@ -36,13 +36,10 @@ def _announcements_for_user(user):
         student = user.student_profile
         from django.db.models import Q
         return Announcement.objects.filter(
-            Q(target_all_students=True) | Q(target_class=student.student_class)
+            Q(target_all_students=True) | Q(target_class__students=student)
         ).distinct()
-    if hasattr(user, 'parent_profile'):
-        from django.db.models import Q
-        classes = [c.student_class_id for c in user.parent_profile.children.all() if c.student_class_id]
-        return Announcement.objects.filter(Q(target_all_students=True) | Q(target_class_id__in=classes)).distinct()
     return Announcement.objects.none()
+
 
 
 def my_announcements(request):

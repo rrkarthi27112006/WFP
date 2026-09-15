@@ -37,15 +37,14 @@
         <a href="{% url 'notifications:my_announcements' %}" class="{% if request.resolver_match.url_name == 'my_announcements' %}active{% endif %}">Announcements</a>
         <a href="{% url 'accounts:logout' %}">Logout</a>
       </nav>
-    {% elif user.parent_profile %}
-      <div class="role-tag">Parent</div>
+    {% elif user.is_superuser or user.is_staff %}
+      <div class="role-tag">Administrator</div>
       <nav>
-        <a href="{% url 'dashboard:parent_dashboard' %}" class="{% if request.resolver_match.url_name == 'parent_dashboard' %}active{% endif %}">Dashboard</a>
-        <a href="{% url 'dashboard:deadlines_calendar' %}" class="{% if request.resolver_match.url_name == 'deadlines_calendar' %}active{% endif %}">Deadlines</a>
-        <a href="{% url 'notifications:my_announcements' %}" class="{% if request.resolver_match.url_name == 'my_announcements' %}active{% endif %}">Announcements</a>
+        <a href="{% url 'admin:index' %}">Admin Panel</a>
         <a href="{% url 'accounts:logout' %}">Logout</a>
       </nav>
     {% endif %}
+
   </aside>
 
   <div class="main-col">

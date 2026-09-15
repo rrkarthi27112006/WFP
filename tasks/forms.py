@@ -1,5 +1,6 @@
 from django import forms
 from .models import Task
+from accounts.models import StudentProfile
 
 
 class TaskForm(forms.ModelForm):
@@ -19,8 +20,13 @@ class TaskForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if teacher is not None:
             from academics.models import Subject, ClassRoom
-            self.fields['subject'].queryset = Subject.objects.all()
-            self.fields['class_assigned'].queryset = ClassRoom.objects.all()
+            teacher_subjects = Subject.objects.filter(teachers=teacher)
+            self.fields['subject'].queryset = teacher_subjects if teacher_subjects.exists() else Subject.objects.all()
+            
+            teacher_classes = ClassRoom.objects.filter(class_teacher=teacher)
+            self.fields['class_assigned'].queryset = teacher_classes if teacher_classes.exists() else ClassRoom.objects.all()
+        
+        self.fields['student'].queryset = StudentProfile.objects.select_related('user').all()
         self.fields['class_assigned'].required = False
         self.fields['student'].required = False
 
@@ -33,3 +39,4 @@ class TaskForm(forms.ModelForm):
                 'Assign this task to either a class or an individual student.'
             )
         return cleaned_data
+

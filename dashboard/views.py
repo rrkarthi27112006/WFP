@@ -1,25 +1,28 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-from accounts.decorators import teacher_required, student_required, parent_required
+from accounts.decorators import teacher_required, student_required
 from . import services
 
 
 def landing_page(request):
     if request.user.is_authenticated:
         return redirect('dashboard:redirect')
-    return render(request, 'dashboard/landing.html')
+    return redirect('accounts:login')
 
 
 @login_required
 def role_redirect(request):
     user = request.user
+    if user.is_superuser or user.is_staff:
+        if not hasattr(user, 'teacher_profile') and not hasattr(user, 'student_profile'):
+            return redirect('admin:index')
     if hasattr(user, 'teacher_profile'):
         return redirect('dashboard:teacher_dashboard')
     if hasattr(user, 'student_profile'):
         return redirect('dashboard:student_dashboard')
-    if hasattr(user, 'parent_profile'):
-        return redirect('dashboard:parent_dashboard')
+    if user.is_superuser:
+        return redirect('admin:index')
     return redirect('accounts:login')
 
 
@@ -56,27 +59,6 @@ def student_dashboard(request):
     })
 
 
-@parent_required
-def parent_dashboard(request):
-    parent = request.user.parent_profile
-    children = parent.children.all()
-    child_id = request.GET.get('child')
-    if child_id:
-        student = children.filter(id=child_id).first() or children.first()
-    else:
-        student = children.first()
-
-    context = {'children': children, 'selected_student': student}
-    if student:
-        buckets = services.student_task_buckets(student)
-        progress = services.subject_wise_progress(student)
-        feedback = services.recent_feedback(student)
-        from notifications.views import _announcements_for_user
-        announcements = _announcements_for_user(student.user)[:5]
-        context.update({**buckets, 'progress': progress, 'feedback': feedback, 'announcements': announcements})
-    return render(request, 'dashboard/parent_dashboard.html', context)
-
-
 @student_required
 def student_progress(request):
     student = request.user.student_profile
@@ -104,9 +86,6 @@ def deadlines_calendar(request):
     elif hasattr(user, 'teacher_profile'):
         from tasks.models import Task
         tasks = list(Task.objects.filter(teacher=user.teacher_profile))
-    elif hasattr(user, 'parent_profile'):
-        child = user.parent_profile.children.first()
-        tasks = services.get_tasks_for_student(child) if child else []
     else:
         tasks = []
     tasks = sorted(tasks, key=lambda t: t.due_date)
@@ -118,3 +97,4 @@ def teacher_reports(request):
     teacher = request.user.teacher_profile
     report = services.teacher_reports(teacher)
     return render(request, 'dashboard/teacher_reports.html', report)
+

@@ -22,12 +22,3 @@ def student_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped
 
-
-def parent_required(view_func):
-    @wraps(view_func)
-    @login_required
-    def _wrapped(request, *args, **kwargs):
-        if not hasattr(request.user, 'parent_profile'):
-            raise PermissionDenied('This page is only available to parents.')
-        return view_func(request, *args, **kwargs)
-    return _wrapped

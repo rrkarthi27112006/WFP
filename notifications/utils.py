@@ -54,12 +54,7 @@ def notify_announcement(announcement):
             f'New announcement: {announcement.title}',
             link='/notifications/announcements/',
         )
-        if student.parent:
-            create_notification(
-                student.parent.user, 'announcement',
-                f'New announcement: {announcement.title}',
-                link='/notifications/announcements/',
-            )
+
 
 
 def notify_missing_work(student, teacher_user, count):

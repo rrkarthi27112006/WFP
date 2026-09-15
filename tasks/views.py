@@ -93,12 +93,15 @@ def teacher_task_detail(request, pk):
     })
 
 
+from django.db.models import Q
+
 @student_required
 def student_task_list(request):
     student = request.user.student_profile
-    tasks = Task.objects.filter(id__in=[
-        t.id for t in Task.objects.all() if student in t.target_students()
-    ]).select_related('subject', 'teacher__user')
+    tasks = Task.objects.filter(
+        Q(student=student) | Q(class_assigned__students=student)
+    ).distinct().select_related('subject', 'teacher__user')
+
 
     view_filter = request.GET.get('view', 'all')
     subject_filter = request.GET.get('subject', '')

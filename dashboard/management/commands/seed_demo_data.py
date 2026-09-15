@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from academics.models import School, ClassRoom, Subject
-from accounts.models import TeacherProfile, StudentProfile, ParentProfile
+from accounts.models import TeacherProfile, StudentProfile
 from tasks.models import Task
 from submissions.models import Submission
 from notifications.models import Announcement
@@ -13,14 +13,26 @@ from notifications.utils import notify_task_assigned, notify_announcement
 
 
 class Command(BaseCommand):
-    help = 'Seed EduTrack with demo data: a teacher, students, a class, subjects and sample tasks.'
+    help = 'Seed EduTrack with demo data: admin, teachers, students, classes with student picker, multi-teacher subjects, tasks, submissions.'
 
     def handle(self, *args, **options):
         now = timezone.now()
 
         school, _ = School.objects.get_or_create(name='Greenwood High School', defaults={'address': 'Chennai, Tamil Nadu'})
 
-        # ---- Teacher: Anitha Teacher ----
+        # ---- Administrator ----
+        admin_user, created = User.objects.get_or_create(
+            username='admin', defaults={'first_name': 'System', 'last_name': 'Administrator', 'email': 'admin@edutrack.local', 'is_staff': True, 'is_superuser': True}
+        )
+        if created:
+            admin_user.set_password('admin1234')
+            admin_user.save()
+        else:
+            admin_user.is_staff = True
+            admin_user.is_superuser = True
+            admin_user.save()
+
+        # ---- Teachers ----
         anitha_user, created = User.objects.get_or_create(
             username='anitha', defaults={'first_name': 'Anitha', 'last_name': 'Teacher', 'email': 'anitha@edutrack.local'}
         )
@@ -31,30 +43,17 @@ class Command(BaseCommand):
             user=anitha_user, defaults={'school': school, 'qualification': 'M.Sc, B.Ed'}
         )
 
-        # ---- Class 10-A ----
-        class_10a, _ = ClassRoom.objects.get_or_create(name='10-A', school=school, defaults={'class_teacher': anitha})
-        if not class_10a.class_teacher:
-            class_10a.class_teacher = anitha
-            class_10a.save()
-
-        # ---- Subjects ----
-        subject_names = ['Mathematics', 'Science', 'English', 'Computer Science']
-        subjects = {}
-        for name in subject_names:
-            subj, _ = Subject.objects.get_or_create(name=name, defaults={'teacher': anitha})
-            subj.classes.add(class_10a)
-            subjects[name] = subj
-
-        # ---- Parent for Rahul ----
-        parent_user, created = User.objects.get_or_create(
-            username='rahul_parent', defaults={'first_name': 'Suresh', 'last_name': 'Kumar', 'email': 'suresh@edutrack.local'}
+        rajesh_user, created = User.objects.get_or_create(
+            username='rajesh', defaults={'first_name': 'Rajesh', 'last_name': 'Kumar', 'email': 'rajesh@edutrack.local'}
         )
         if created:
-            parent_user.set_password('demo1234')
-            parent_user.save()
-        parent_profile, _ = ParentProfile.objects.get_or_create(user=parent_user)
+            rajesh_user.set_password('demo1234')
+            rajesh_user.save()
+        rajesh, _ = TeacherProfile.objects.get_or_create(
+            user=rajesh_user, defaults={'school': school, 'qualification': 'M.Tech, Ph.D'}
+        )
 
-        # ---- Student: Rahul ----
+        # ---- Students ----
         rahul_user, created = User.objects.get_or_create(
             username='rahul', defaults={'first_name': 'Rahul', 'last_name': 'Kumar', 'email': 'rahul@edutrack.local'}
         )
@@ -62,17 +61,9 @@ class Command(BaseCommand):
             rahul_user.set_password('demo1234')
             rahul_user.save()
         rahul, _ = StudentProfile.objects.get_or_create(
-            user=rahul_user, defaults={
-                'school': school, 'student_class': class_10a, 'roll_number': '10A-07', 'parent': parent_profile,
-            }
+            user=rahul_user, defaults={'school': school, 'roll_number': '10A-07'}
         )
-        if not rahul.parent:
-            rahul.parent = parent_profile
-            rahul.student_class = class_10a
-            rahul.school = school
-            rahul.save()
 
-        # ---- A second student for class realism ----
         priya_user, created = User.objects.get_or_create(
             username='priya', defaults={'first_name': 'Priya', 'last_name': 'Raman', 'email': 'priya@edutrack.local'}
         )
@@ -80,10 +71,45 @@ class Command(BaseCommand):
             priya_user.set_password('demo1234')
             priya_user.save()
         priya, _ = StudentProfile.objects.get_or_create(
-            user=priya_user, defaults={'school': school, 'student_class': class_10a, 'roll_number': '10A-12'}
+            user=priya_user, defaults={'school': school, 'roll_number': '10A-12'}
         )
 
-        # ---- Sample tasks (varied to demonstrate Smart Priority) ----
+        # ---- Classes (Created by teachers with student enrollment) ----
+        class_10a, _ = ClassRoom.objects.get_or_create(name='Class 10-A', school=school, defaults={'class_teacher': anitha})
+        class_10a.class_teacher = anitha
+        class_10a.students.set([rahul, priya])
+        class_10a.save()
+
+        class_10b, _ = ClassRoom.objects.get_or_create(name='Class 10-B (CS Special)', school=school, defaults={'class_teacher': rajesh})
+        class_10b.class_teacher = rajesh
+        class_10b.students.set([rahul, priya])
+        class_10b.save()
+
+        # ---- Subjects (Created by Admin with Multiple Teachers Assigned) ----
+        math_subj, _ = Subject.objects.get_or_create(name='Mathematics', defaults={'code': 'MATH101'})
+        math_subj.teachers.set([anitha, rajesh])
+        math_subj.classes.set([class_10a, class_10b])
+
+        science_subj, _ = Subject.objects.get_or_create(name='Science', defaults={'code': 'SCI102'})
+        science_subj.teachers.set([anitha])
+        science_subj.classes.set([class_10a])
+
+        english_subj, _ = Subject.objects.get_or_create(name='English', defaults={'code': 'ENG103'})
+        english_subj.teachers.set([anitha])
+        english_subj.classes.set([class_10a])
+
+        cs_subj, _ = Subject.objects.get_or_create(name='Computer Science', defaults={'code': 'CS104'})
+        cs_subj.teachers.set([rajesh, anitha])
+        cs_subj.classes.set([class_10a, class_10b])
+
+        subjects = {
+            'Mathematics': math_subj,
+            'Science': science_subj,
+            'English': english_subj,
+            'Computer Science': cs_subj,
+        }
+
+        # ---- Sample Tasks (demonstrates Smart Priority & Workload) ----
         task_specs = [
             dict(
                 title='Mathematics Project: Geometry in Architecture',
@@ -160,9 +186,15 @@ class Command(BaseCommand):
         if was_created:
             notify_announcement(ann)
 
-        self.stdout.write(self.style.SUCCESS('Demo data seeded successfully.'))
-        self.stdout.write('Login credentials (password: demo1234 for all):')
-        self.stdout.write('  Teacher: anitha')
-        self.stdout.write('  Student: rahul')
-        self.stdout.write('  Student: priya')
-        self.stdout.write('  Parent:  rahul_parent')
+        self.stdout.write(self.style.SUCCESS('EduTrack database seeded successfully.'))
+        self.stdout.write('----------------------------------------------------')
+        self.stdout.write('Admin Panel Login:')
+        self.stdout.write('  Admin:   admin   (password: admin1234)')
+        self.stdout.write('Teacher Logins:')
+        self.stdout.write('  Teacher: anitha  (password: demo1234)')
+        self.stdout.write('  Teacher: rajesh  (password: demo1234)')
+        self.stdout.write('Student Logins:')
+        self.stdout.write('  Student: rahul   (password: demo1234)')
+        self.stdout.write('  Student: priya   (password: demo1234)')
+        self.stdout.write('----------------------------------------------------')
+
